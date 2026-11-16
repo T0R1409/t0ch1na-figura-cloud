@@ -1,4 +1,4 @@
-"""Validate mixin/reflection targets against the FOUR real released Figura JARs."""
+"""Validate mixin/reflection targets against the five real released Figura JARs."""
 from pathlib import Path
 import struct
 import zipfile
@@ -49,7 +49,7 @@ TARGETS={
 
 def main():
     jars=list((ROOT.parent/'figura-cloud/clients').glob('*.jar'))
-    assert len(jars)==4,'Download the four official Figura clients first'
+    assert len(jars)==5,'Download Figura for Fabric/Forge 1.20.1 and Fabric/Forge/NeoForge 1.21.1 first'
     for p in jars:
         with zipfile.ZipFile(p) as z:
             for cls, wanted in TARGETS.items():

@@ -1,6 +1,6 @@
 # T0CH1NA Figura AutoCloud — รุ่นทดลอง
 
-ม็อดเสริมฝั่งผู้เล่นสำหรับ Figura **0.1.6** บน Fabric / Minecraft Forge
+ม็อดเสริมฝั่งผู้เล่นสำหรับ Figura **0.1.6** บน Fabric / Minecraft Forge / NeoForge
 รองรับ Minecraft **1.20.1 และ 1.21.1**
 
 ## สิ่งที่ทำ
@@ -23,14 +23,24 @@
 
 | Minecraft | Loader | JAR |
 |---|---|---|
-| 1.20.1 | Fabric | t0ch1na-autocloud-1.0.0-beta.1-1.20.1-fabric.jar |
-| 1.20.1 | Forge | t0ch1na-autocloud-1.0.0-beta.1-1.20.1-forge.jar |
-| 1.21.1 | Fabric | t0ch1na-autocloud-1.0.0-beta.1-1.21.1-fabric.jar |
-| 1.21.1 | Forge | t0ch1na-autocloud-1.0.0-beta.1-1.21.1-forge.jar |
+| 1.20.1 | fabric | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-fabric.jar |
+| 1.20.1 | forge | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-forge.jar |
+| 1.20.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-neoforge.jar |
+| 1.21.1 | fabric | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-fabric.jar |
+| 1.21.1 | forge | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-forge.jar |
+| 1.21.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-neoforge.jar |
 
 ปิดเกม → Prism: คลิกขวา instance → Edit → Mods → Add File → เลือก JAR
 ต้องมี Figura 0.1.6 ของ loader/เวอร์ชันเดียวกันอยู่ด้วย ไม่มี Figura อยู่ใน JAR นี้
-ฝั่ง Minecraft server ไม่ต้องลง addon นี้ และไม่รองรับ NeoForge
+ฝั่ง Minecraft server ไม่ต้องลง addon นี้
+
+**NeoForge 1.21.1:** ใช้ Figura 0.1.6 รุ่น NeoForge + AutoCloud neoforge-1.21.1
+
+**NeoForge 1.20.1 (legacy ทดลอง):** ใช้ loader NeoForge สาย 47.x + Figura 0.1.6 รุ่น Forge
++ AutoCloud neoforge-1.20.1 รุ่นนี้ compile กับ NeoForge language-java 47.2.2
+และตรวจ metadata ของ NeoForge 1.20.1-47.1.106 แล้ว ซึ่งยังใช้ mod ID forge และ namespace net.minecraftforge
+Figura ไม่ได้เผยแพร่ JAR ที่ติดป้าย NeoForge 1.20.1 โดยตรง จึงยังต้องทดสอบความเข้ากันได้ในเกม
+ไฟล์ NeoForge 1.21.1 ใช้แทนตัว 1.20.1 ไม่ได้
 1.20.1 ใช้ Java 17 ขึ้นไป, 1.21.1 ใช้ Java 21
 ม็อดนี้ควบคุม Figura Cloud IP ขณะเปิดเกม การแก้ช่องนั้นด้วยมือจะถูกระบบเลือกให้อีกครั้ง
 ถ้าต้องการหยุดระบบอัตโนมัติ ให้ปิดเกมแล้วเอา AutoCloud ออกจาก Mods
@@ -97,12 +107,12 @@ publisher ใช้ GitHub Contents API อัปเดตเมื่อ URL/�
 - คลาวด์นี้จำกัดว่าต้องมี addon แต่หากจะจำกัดเฉพาะสมาชิกเซิร์ฟเวอร์ ให้ตั้ง ALLOWED_UUIDS เพิ่ม
 - GitHub directory เริ่มจากสถานะ offline จนกว่าเจ้าของเครื่องตั้ง publisher สำเร็จ
 - รุ่นนี้เป็น **beta**: build/ทดสอบ protocol และ state machine แล้ว
-  ยังไม่ได้เปิด Minecraft จริงครบทั้ง 4 ชุด และยังไม่ได้ทดสอบด้วยบัญชี Minecraft จริง
+  ยังไม่ได้เปิด Minecraft จริงครบทั้ง 6 ชุด และยังไม่ได้ทดสอบด้วยบัญชี Minecraft จริง
 
 ## Build / ตรวจสอบ
 
 ติดตั้ง Java 21 และ Python 3 แล้วรัน `python build.py`
-ตัว build ดาวน์โหลด Eclipse ECJ, Mixin และ loader API เพื่อ compile Java 17 bytecode
+ตัว build ดาวน์โหลด Eclipse ECJ, Mixin และ loader API เพื่อ compile Java 17 bytecode (NeoForge 1.21.1 เป็น Java 21 bytecode)
 ไม่มีการแจก library เหล่านั้นหรือ Minecraft รวมใน addon JAR
 
 ```sh
@@ -114,7 +124,7 @@ python -m unittest discover -s tests -v
 ```
 
 บน Windows เปลี่ยนตัวคั่น classpath จาก `:` เป็น `;`
-`tests/verify_figura_contract.py` ตรวจชื่อ/descriptor จริงใน Figura 4 JAR
+`tests/verify_figura_contract.py` ตรวจชื่อ/descriptor จริงใน Figura 5 JAR (legacy 1.20.1 ใช้ Figura Forge ร่วมกัน)
 โดยคาดว่าไฟล์อยู่ที่ `../figura-cloud/clients/`
 Mixin ใช้ remap=false และแตะเฉพาะคลาส Figura ที่ชื่อเหมือนกันทั้ง loader/game versions
 ไม่มีการอ้างชื่อคลาส Minecraft ที่ต้อง remap

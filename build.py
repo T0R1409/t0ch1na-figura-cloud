@@ -1,4 +1,4 @@
-"""Reproducible Java 17 client-only builds; no Minecraft source or mappings needed."""
+"""Client-only Java 17/21 builds; no Minecraft source or mappings needed."""
 import hashlib
 import json
 import os
@@ -16,6 +16,8 @@ URLS = {
     'fabric-loader.jar': 'https://maven.fabricmc.net/net/fabricmc/fabric-loader/0.16.14/fabric-loader-0.16.14.jar',
     'mixin.jar': 'https://maven.fabricmc.net/net/fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/sponge-mixin-0.15.5+mixin.0.8.7.jar',
     'forge-47.jar': 'https://maven.minecraftforge.net/net/minecraftforge/javafmllanguage/1.20.1-47.1.43/javafmllanguage-1.20.1-47.1.43.jar',
+    'neoforge-loader.jar': 'https://maven.neoforged.net/releases/net/neoforged/fancymodloader/loader/4.0.42/loader-4.0.42.jar',
+    'neoforge-legacy-language.jar': 'https://maven.neoforged.net/releases/net/neoforged/fancymodloader/language-java/47.2.2/language-java-47.2.2.jar',
     'forge-52.jar': 'https://maven.minecraftforge.net/net/minecraftforge/javafmllanguage/1.21.1-52.0.28/javafmllanguage-1.21.1-52.0.28.jar',
 }
 for name, url in URLS.items():
@@ -23,7 +25,7 @@ for name, url in URLS.items():
         with urllib.request.urlopen(url, timeout=90) as r:
             (DEPS / name).write_bytes(r.read())
 
-VERSION = '1.0.0-beta.1'
+VERSION = '1.0.0-beta.2'
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 MIXINS = {
@@ -34,18 +36,23 @@ MIXINS = {
 }
 common = list((ROOT/'src/main/java').rglob('*.java'))
 for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52', 21)]:
-    for loader in ['fabric', 'forge']:
+    for loader in ['fabric', 'forge', 'neoforge']:
         classes = ROOT / 'build' / f'{game}-{loader}'
         classes.mkdir(parents=True, exist_ok=True)
-        cp = os.pathsep.join(str(DEPS/n) for n in ['gson.jar', 'mixin.jar', 'fabric-loader.jar', f'forge-{forge_version}.jar'])
-        sources = common + list((ROOT/f'src/{loader}/java').rglob('*.java'))
-        subprocess.run(['java', '-jar', str(DEPS/'ecj.jar'), '-17', '-proc:none', '-encoding', 'UTF-8',
+        neo_current = loader == 'neoforge' and game == '1.21.1'
+        source_loader = 'forge' if loader == 'neoforge' and game == '1.20.1' else loader
+        loader_dep = ('neoforge-loader.jar' if neo_current else 'neoforge-legacy-language.jar') if loader == 'neoforge' else ('fabric-loader.jar' if loader == 'fabric' else f'forge-{forge_version}.jar')
+        cp = os.pathsep.join(str(DEPS/n) for n in ['gson.jar', 'mixin.jar', loader_dep])
+        sources = common + list((ROOT/f'src/{source_loader}/java').rglob('*.java'))
+        subprocess.run(['java', '-jar', str(DEPS/'ecj.jar'), '-21' if neo_current else '-17', '-proc:none', '-encoding', 'UTF-8',
                         '-cp', cp, '-d', str(classes)] + [str(s) for s in sources], check=True)
         name = f't0ch1na-autocloud-{VERSION}-{game}-{loader}.jar'
         with zipfile.ZipFile(DIST/name, 'w', zipfile.ZIP_DEFLATED) as z:
             for p in sorted(classes.rglob('*.class')):
                 z.write(p, p.relative_to(classes).as_posix())
-            z.writestr('t0ch1na-autocloud.mixins.json', json.dumps(MIXINS))
+            mixins = dict(MIXINS)
+            if neo_current: mixins['compatibilityLevel'] = 'JAVA_21'
+            z.writestr('t0ch1na-autocloud.mixins.json', json.dumps(mixins))
             z.writestr('META-INF/MANIFEST.MF', 'Manifest-Version: 1.0\nMixinConfigs: t0ch1na-autocloud.mixins.json\n\n')
             z.write(ROOT/'LICENSE', 'LICENSE')
             if loader == 'fabric':
@@ -59,6 +66,37 @@ for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52',
                     'depends': {'fabricloader': '>=0.15.0', 'minecraft': game,
                                 'java': f'>={java_version}', 'figura': '>=0.1.6 <0.1.7'},
                 }, indent=2))
+            elif neo_current:
+                z.writestr('META-INF/neoforge.mods.toml', f'''modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="t0ch1na_autocloud"
+version="{VERSION}"
+displayName="T0CH1NA Figura AutoCloud"
+authors="T0CH1NA"
+description="Automatic Figura cloud discovery and official-cloud fallback."
+[[dependencies.t0ch1na_autocloud]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="CLIENT"
+[[dependencies.t0ch1na_autocloud]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="CLIENT"
+[[dependencies.t0ch1na_autocloud]]
+modId="figura"
+type="required"
+versionRange="[0.1.6,0.1.7)"
+ordering="AFTER"
+side="CLIENT"
+[[mixins]]
+config="t0ch1na-autocloud.mixins.json"
+''')
             else:
                 z.writestr('META-INF/mods.toml', f'''modLoader="javafml"
 loaderVersion="[{forge_version},{int(forge_version)+1})"

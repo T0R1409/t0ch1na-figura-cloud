@@ -1,0 +1,6 @@
+0658a6df9f9b4df9a0a50a8f2ea86ad288eb7a814125ff4b5f6b658de214faf4  t0ch1na-autocloud-1.0.0-beta.2-1.20.1-fabric.jar
+7b755b2dc407556343cf67178a2a4c6fcee634e4b1cee208803f0034aa72d0c6  t0ch1na-autocloud-1.0.0-beta.2-1.20.1-forge.jar
+7b755b2dc407556343cf67178a2a4c6fcee634e4b1cee208803f0034aa72d0c6  t0ch1na-autocloud-1.0.0-beta.2-1.20.1-neoforge.jar
+69f7d37d8b66c8eafc79b0a99cbab738b15e0f9cee8cf8598fadf3dbfa123d4d  t0ch1na-autocloud-1.0.0-beta.2-1.21.1-fabric.jar
+d66dda21243f9e9a529b2342085a9e634ae7c524f840387b74a8c2c9a2f8932d  t0ch1na-autocloud-1.0.0-beta.2-1.21.1-forge.jar
+a1d178e81805ddfdc3d2986e35fe6b1e8cd5343dd7ddcba57d6e22d70cfb73e7  t0ch1na-autocloud-1.0.0-beta.2-1.21.1-neoforge.jar
