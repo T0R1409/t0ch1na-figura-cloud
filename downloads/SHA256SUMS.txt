@@ -1,0 +1,5 @@
+343f6976870f75040fb1c7adfb530adda4d64fb1e4b7a67df73ec8e6a8e5a8d6  t0ch1na-autocloud-1.0.0-beta.1-1.20.1-fabric.jar
+f8b429edcc1e92cd52b026f7d5d78e1e4af6dfbb070cf123ae463d7040808fa1  t0ch1na-autocloud-1.0.0-beta.1-1.20.1-forge.jar
+da09249633177b917cb2b4be10fcaad9714c58367e0c63576769d842c4746004  t0ch1na-autocloud-1.0.0-beta.1-1.21.1-fabric.jar
+be11e0a4b8de2fc87984db2d1cbd625eade807d296532d0b964897cdf86857f7  t0ch1na-autocloud-1.0.0-beta.1-1.21.1-forge.jar
+745e00ab2af38a479e97637b055425ffb16e7b57237fbbf7ef04fc79c07ee586  t0ch1na-autocloud-host-1.0.0-beta.1.zip
