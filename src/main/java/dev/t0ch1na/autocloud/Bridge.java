@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.TimeUnit;
 
 /** All Figura mutations run inside Figura's client tick, never on the worker. */
 public final class Bridge {
@@ -40,20 +39,18 @@ public final class Bridge {
         try {
             long now = System.nanoTime();
             String current = currentHost();
-            if (selector == null) {
-                // Do not switch a saved private cloud to official before the
-                // first background probe has even finished.
-                selector = new Selection(current);
-                applied = current;
-                if (Directory.allowedHost(current)) verifiedHost = current;
-                lastAuth = now - 30_000_000_000L;
+            if (selector == null) bootstrap();
+            current = currentHost();
+            if (!Directory.allowedHost(current)) {
+                // A Settings reset or manual official IP must never opt out of
+                // this private-only mode while the addon is installed.
+                switchHost(selector.selected());
+                current = selector.selected();
+                lastAuth = now;
             } else if (!current.equals(applied)) {
-                // Figura's Settings screen starts its own re-authentication.
-                // Give the manually entered cloud a fresh grace period and
-                // discard any result from the previous configuration.
                 selector.adopt(current);
                 applied = current;
-                if (Directory.allowedHost(current)) verifiedHost = current;
+                verifiedHost = current;
                 lastAuth = now;
                 hasProbed = false;
                 LOG.log(System.Logger.Level.INFO, "Checking manually selected cloud: " + current);
@@ -61,8 +58,7 @@ public final class Bridge {
 
             ProbeResult result = PENDING.getAndSet(null);
             if (result != null && result.revision() == selector.revision()) {
-                String target = selector.update(result.reachable(),
-                        TimeUnit.NANOSECONDS.toMillis(now), result.revision());
+                String target = selector.update(result.reachable(), result.revision());
                 if (result.reachable() != null) verifiedHost = result.reachable();
                 if (!target.equals(current)) {
                     switchHost(target);
@@ -113,6 +109,31 @@ public final class Bridge {
         }
     }
 
+    /** Called by ConfigManager.loadConfig before Figura starts cloud authentication. */
+    public static void bootstrap() {
+        try {
+            String saved = currentHost();
+            String target = Directory.allowedHost(saved) ? saved : Directory.INITIAL_HOST;
+            writeHost(target);
+            if (selector == null) selector = new Selection(target);
+            else selector.adopt(target);
+            applied = target;
+            verifiedHost = target;
+            hasProbed = false;
+            lastAuth = System.nanoTime() - 30_000_000_000L;
+            LOG.log(System.Logger.Level.INFO, "Private cloud set during Figura startup: " + target);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to initialize T0CH1NA private cloud", e);
+        }
+    }
+
+    private static void writeHost(String host) throws Exception {
+        Object setting = ipSetting();
+        Class<?> type = figura("config.ConfigType");
+        type.getField("value").set(setting, host);
+        type.getField("tempValue").set(setting, host);
+    }
+
     private static Class<?> figura(String suffix) throws ClassNotFoundException {
         return Class.forName("org.figuramc.figura." + suffix);
     }
@@ -145,12 +166,7 @@ public final class Bridge {
             if (!(boolean) mod.getMethod("isLocal", UUID.class).invoke(null, id))
                 avatars.getMethod("clearAvatars", UUID.class).invoke(null, id);
         }
-        Object setting = ipSetting();
-        Class<?> type = figura("config.ConfigType");
-        // Set both values explicitly; Figura's setValue only runs onChange when
-        // value and tempValue already differ. Re-auth once after all changes.
-        type.getField("value").set(setting, host);
-        type.getField("tempValue").set(setting, host);
+        writeHost(host);
         figura("config.ConfigManager").getMethod("saveConfig").invoke(null);
         applied = host;
         network.getMethod("reAuth").invoke(null);

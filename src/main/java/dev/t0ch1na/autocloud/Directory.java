@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 public final class Directory {
     private static final System.Logger LOG = System.getLogger("T0CH1NA AutoCloud");
+    public static final String INITIAL_HOST = "departments-whole-scripts-aid.trycloudflare.com";
     public static final String URL = "https://raw.githubusercontent.com/T0R1409/t0ch1na-figura-cloud/main/cloud.json";
     public static final String HEADER = "X-T0CH1NA-Addon";
     public static final String VERSION = "1";

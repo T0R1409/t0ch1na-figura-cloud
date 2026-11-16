@@ -41,7 +41,7 @@ TARGETS={
  'backend2/trust/KeyStoreHelper':[('websocketWithBackendCertificates','(Ljava/lang/String;)Lcom/neovisionaries/ws/client/WebSocket;')],
  'config/Configs':[('SERVER_IP','Lorg/figuramc/figura/config/ConfigType$IPConfig;')],
  'config/ConfigType':[('value','Ljava/lang/Object;'),('tempValue','Ljava/lang/Object;')],
- 'config/ConfigManager':[('saveConfig','()V')],
+ 'config/ConfigManager':[('saveConfig','()V'),('loadConfig','()V')],
  'avatar/AvatarManager':[('clearAvatars','(Ljava/util/UUID;)V'),('LOADED_USERS','Ljava/util/Map;')],
  'FiguraMod':[('isLocal','(Ljava/util/UUID;)Z')],
 }

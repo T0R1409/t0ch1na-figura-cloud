@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,8 +23,13 @@ public class BridgeRegressionTest {
  public static void main(String[] args)throws Exception{
   // Keep actual HTTP out of this deterministic controller test.
   ((AtomicBoolean)field("BUSY")).set(true);
+  Configs.SERVER_IP.value="figura.moonlight-devs.org";
+  Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
+  Bridge.bootstrap();
+  eq(Directory.INITIAL_HOST,Configs.SERVER_IP.value);
+  eq(0,NetworkStuff.authentications);
   Bridge.tick();
-  eq("saved.trycloudflare.com",Configs.SERVER_IP.value);
+  eq(Directory.INITIAL_HOST,Configs.SERVER_IP.value);
   eq(0,NetworkStuff.disconnects);eq(0,ConfigManager.saves);eq(0,NetworkStuff.authentications);
   Selection selection=(Selection)field("selector");
   long old=selection.revision();
@@ -53,12 +57,16 @@ public class BridgeRegressionTest {
   eq(0,NetworkStuff.API_REQUESTS.size());eq(0,NetworkStuff.WS_REQUESTS.size());
   eq(true,org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.containsKey(local));
   eq(false,org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.containsKey(remote));
-  // Confirmed failures after the full grace window still fall back correctly.
-  long before=TimeUnit.NANOSECONDS.toMillis(System.nanoTime())-61000;
-  selection.update(null,before,selection.revision());selection.update(null,before+1,selection.revision());
-  result(selection.revision(),null);Bridge.tick();
-  eq(Selection.OFFICIAL,Configs.SERVER_IP.value);
+  // An arbitrarily long outage never switches to the official cloud.
+  for(int i=0;i<100;i++) { result(selection.revision(),null);Bridge.tick(); }
+  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);
+  eq(1,NetworkStuff.disconnects);eq(1,NetworkStuff.authentications);
+  // Even a Settings reset is restored to our private cloud on the next tick.
+  Configs.SERVER_IP.value="figura.moonlight-devs.org";
+  Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
+  Bridge.tick();
+  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);
   eq(2,NetworkStuff.disconnects);eq(2,NetworkStuff.authentications);
-  System.out.println("Bridge regression tests passed: startup, settings-before-tick headers, stale result rejection, loading preservation, recovery, queue isolation, local preview, confirmed fallback");
+  System.out.println("Bridge private-only regressions passed: forced IP before first tick, private auth header, manual edit, stale results, loading preservation, recovery, queue isolation, local preview, outages and Settings reset");
  }
 }
