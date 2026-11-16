@@ -7,13 +7,19 @@
 
 - ติดตั้งคู่กับ Figura แล้วตั้งคลาวด์ให้อัตโนมัติ ไม่ต้องวาง IP เอง
 - อ่านที่อยู่ล่าสุดจาก cloud.json บน GitHub ฟรี แล้วตรวจ /health ก่อนเลือกใช้
-- เมื่อคลาวด์ส่วนตัวปิด: ตรวจไม่ผ่านสองรอบจะสลับไปคลาวด์ทางการของ Figura
+- เมื่อคลาวด์ส่วนตัวปิด: ตรวจไม่ผ่านต่อเนื่องอย่างน้อย 3 รอบ และผ่านเวลาอย่างน้อย 60 วินาทีนับจากความล้มเหลวครั้งแรก จึงสลับไปคลาวด์ทางการของ Figura
 - เมื่อคลาวด์กลับมา/ลิงก์เปลี่ยน: ตามที่อยู่ใหม่แล้วสลับกลับโดยไม่ต้องออกเซิร์ฟเวอร์
 - โฮสต์ประกาศที่อยู่ผ่าน publisher ที่อ่านลิงก์ปัจจุบันจาก cloudflared
 - backend รุ่นนี้ปฏิเสธคำขอ Figura ที่ไม่มีส่วนหัวของ AutoCloud
 - ไม่มี GitHub token หรือรหัส Minecraft ฝังอยู่ใน JAR ที่แจกผู้เล่น
 
-ตรวจประมาณทุก 15 วินาที การสลับไม่ใช่ทันที; เครือข่าย, GitHub raw cache และ timeout
+รุ่น beta 3 เก็บคลาวด์ที่ตั้งไว้ระหว่างรอตรวจครั้งแรก ไม่สลับไปทางการตั้งแต่เริ่มเกม
+เมื่อแก้ Cloud IP ด้วยมือ ผลตรวจที่เริ่มก่อนการแก้จะถูกทิ้ง และเริ่มนับช่วงรอใหม่
+ไม่สั่งเริ่มยืนยันตัวตนซ้ำขณะ Figura ยังอยู่ในสถานะกำลังเชื่อมต่อ
+เพิ่ม timeout การอ่าน GitHub เป็น 12 วินาที และการตรวจ /health เป็น 15 วินาที
+คำขอเหล่านี้ทำงานเบื้องหลัง ไม่บล็อก client tick
+
+ตรวจประมาณทุก 15 วินาที (รอคำขอก่อนหน้าเสร็จก่อน) การสลับไม่ใช่ทันที; เครือข่าย, GitHub raw cache และ timeout
 อาจทำให้การตรวจพบลิงก์ใหม่ช้าขึ้นได้ เมื่ออ่าน GitHub ไม่ได้แต่คลาวด์เดิมยังตอบอยู่
 จะใช้คลาวด์เดิมต่อ แทนการสลับออกทันที
 
@@ -23,12 +29,12 @@
 
 | Minecraft | Loader | JAR |
 |---|---|---|
-| 1.20.1 | fabric | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-fabric.jar |
-| 1.20.1 | forge | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-forge.jar |
-| 1.20.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.2-1.20.1-neoforge.jar |
-| 1.21.1 | fabric | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-fabric.jar |
-| 1.21.1 | forge | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-forge.jar |
-| 1.21.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.2-1.21.1-neoforge.jar |
+| 1.20.1 | fabric | t0ch1na-autocloud-1.0.0-beta.3-1.20.1-fabric.jar |
+| 1.20.1 | forge | t0ch1na-autocloud-1.0.0-beta.3-1.20.1-forge.jar |
+| 1.20.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.3-1.20.1-neoforge.jar |
+| 1.21.1 | fabric | t0ch1na-autocloud-1.0.0-beta.3-1.21.1-fabric.jar |
+| 1.21.1 | forge | t0ch1na-autocloud-1.0.0-beta.3-1.21.1-forge.jar |
+| 1.21.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.3-1.21.1-neoforge.jar |
 
 ปิดเกม → Prism: คลิกขวา instance → Edit → Mods → Add File → เลือก JAR
 ต้องมี Figura 0.1.6 ของ loader/เวอร์ชันเดียวกันอยู่ด้วย ไม่มี Figura อยู่ใน JAR นี้

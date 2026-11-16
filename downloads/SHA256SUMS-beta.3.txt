@@ -1,0 +1,7 @@
+4d951471c536a1924b0ec79831cb3a831bd6f450adf2d075b5f9cd6c23325f01  t0ch1na-autocloud-1.0.0-beta.3-1.20.1-fabric.jar
+73432239132860c3210b459bd91d19bd3f05278899fec37dd2488b3b4c795674  t0ch1na-autocloud-1.0.0-beta.3-1.20.1-forge.jar
+7d3a2c2c3b9d7fe8a149c00e1cce0d24f1900f15debb4a09685274ced478eb97  t0ch1na-autocloud-1.0.0-beta.3-1.20.1-neoforge.jar
+1e752331cf9e75dd14d57968dc1d5935bc857dfd00404c80bf2b1c80e7574557  t0ch1na-autocloud-1.0.0-beta.3-1.21.1-fabric.jar
+ff44415423fc2fbfa7c1ec5baf2db050b3cf4c3a9bc0b96bcd677487ca65419e  t0ch1na-autocloud-1.0.0-beta.3-1.21.1-forge.jar
+9df9c600b8c008774d8c8b1c61896ed87e006bd023f0bb98271465acc91457af  t0ch1na-autocloud-1.0.0-beta.3-1.21.1-neoforge.jar
+294bc0459b6009484368327aa00e57856e50924d4dd396a2c797c8fc8e45d563  AutoCloud-Sorted-beta3.zip

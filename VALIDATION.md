@@ -1,4 +1,4 @@
-# Validation — 1.0.0-beta.2
+# Validation — 1.0.0-beta.3
 
 Passed:
 - All six addon JARs compile against real Fabric/Forge/NeoForge loader APIs (Java 17; modern NeoForge Java 21).
@@ -22,3 +22,12 @@ upgrade is installed and its publisher can update cloud.json.
 
 NeoForge metadata, loader entrypoints, Java class versions and mixin compatibility levels verified for both versions.
 NeoForge 1.20.1 legacy relies on Forge compatibility; no dedicated official Figura NeoForge 1.20.1 artifact exists.
+
+Beta 3 regression checks passed:
+- Saved private hostname is preserved before the initial discovery result.
+- Failed checks require at least 3 failures AND >=60 seconds since the first failure.
+- A successful check resets the failure grace window.
+- Manual Settings edits invalidate old in-flight results and receive addon headers before the next tick.
+- A Figura login already in loading state is not interrupted.
+- Latest-host recovery, confirmed fallback, queue clearing and local-preview preservation.
+- BridgeRegressionTest uses mock Figura classes; real released method/field descriptors were separately checked in all five Figura JARs.

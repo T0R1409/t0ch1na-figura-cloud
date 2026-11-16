@@ -5,57 +5,106 @@ import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.LinkedHashSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
 
 /** All Figura mutations run inside Figura's client tick, never on the worker. */
 public final class Bridge {
     private static final System.Logger LOG = System.getLogger("T0CH1NA AutoCloud");
     private static final Directory DIRECTORY = new Directory();
-    private static final Selection SELECTOR = new Selection();
+    private static Selection selector;
+    private static final AtomicReference<ProbeResult> PENDING = new AtomicReference<>();
     private static final AtomicBoolean BUSY = new AtomicBoolean();
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "t0ch1na-cloud-discovery"); t.setDaemon(true); return t;
     });
-    private static volatile String verifiedHost;
-    private static volatile String desired = Selection.OFFICIAL;
+    private static String verifiedHost;
     private static volatile String applied;
-    private static long nextProbe;
+    private static long lastProbe;
+    private static boolean hasProbed;
     private static long lastAuth;
     private static boolean disabled;
     private static final long INTERVAL = 15_000_000_000L;
 
     private Bridge() {}
 
+    private record ProbeResult(long revision, String reachable) {}
+
     public static void tick() {
         if (disabled) return;
         try {
             long now = System.nanoTime();
-            if (!desired.equals(applied) || !desired.equals(currentHost())) {
-                switchHost(desired);
-                applied = desired;
+            String current = currentHost();
+            if (selector == null) {
+                // Do not switch a saved private cloud to official before the
+                // first background probe has even finished.
+                selector = new Selection(current);
+                applied = current;
+                if (Directory.allowedHost(current)) verifiedHost = current;
+                lastAuth = now - 30_000_000_000L;
+            } else if (!current.equals(applied)) {
+                // Figura's Settings screen starts its own re-authentication.
+                // Give the manually entered cloud a fresh grace period and
+                // discard any result from the previous configuration.
+                selector.adopt(current);
+                applied = current;
+                if (Directory.allowedHost(current)) verifiedHost = current;
                 lastAuth = now;
-            } else if (now - lastAuth >= 30_000_000_000L && backendStatus() == 1) {
+                hasProbed = false;
+                LOG.log(System.Logger.Level.INFO, "Checking manually selected cloud: " + current);
+            }
+
+            ProbeResult result = PENDING.getAndSet(null);
+            if (result != null && result.revision() == selector.revision()) {
+                String target = selector.update(result.reachable(),
+                        TimeUnit.NANOSECONDS.toMillis(now), result.revision());
+                if (result.reachable() != null) verifiedHost = result.reachable();
+                if (!target.equals(current)) {
+                    switchHost(target);
+                    lastAuth = now;
+                    current = target;
+                }
+            }
+
+            // A slow authentication in state 2 is left alone. Retry only an
+            // explicitly disconnected backend, not one that is still loading.
+            if (now - lastAuth >= 30_000_000_000L && backendStatus() == 1) {
                 figura("backend2.NetworkStuff").getMethod("reAuth").invoke(null);
                 lastAuth = now;
             }
-            if (now >= nextProbe && BUSY.compareAndSet(false, true)) {
-                nextProbe = now + INTERVAL;
+
+            if ((!hasProbed || now - lastProbe >= INTERVAL) && BUSY.compareAndSet(false, true)) {
+                lastProbe = now;
+                hasProbed = true;
+                long revision = selector.revision();
+                String configuredHost = current;
+                String cachedHost = verifiedHost;
                 WORKER.execute(() -> {
+                    String reachable = null;
                     try {
-                        String candidate = null;
-                        try { candidate = DIRECTORY.discover(); } catch (Exception ignored) {}
-                        String reachable = null;
-                        if (candidate != null && DIRECTORY.healthy(candidate)) reachable = candidate;
-                        else if (verifiedHost != null && !verifiedHost.equals(candidate)
-                                && DIRECTORY.healthy(verifiedHost)) reachable = verifiedHost;
-                        if (reachable != null) verifiedHost = reachable;
-                        desired = SELECTOR.update(reachable);
+                        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+                        try {
+                            String discovered = DIRECTORY.discover();
+                            if (discovered != null) candidates.add(discovered);
+                        } catch (Exception e) {
+                            LOG.log(System.Logger.Level.DEBUG, "Directory check: " + e.getClass().getSimpleName());
+                        }
+                        if (Directory.allowedHost(configuredHost)) candidates.add(configuredHost);
+                        if (Directory.allowedHost(cachedHost)) candidates.add(cachedHost);
+                        for (String candidate : candidates) {
+                            if (DIRECTORY.healthy(candidate)) { reachable = candidate; break; }
+                        }
                     } catch (Exception e) {
                         LOG.log(System.Logger.Level.WARNING, "Cloud probe failed: " + e.getClass().getSimpleName());
-                    } finally { BUSY.set(false); }
+                    } finally {
+                        PENDING.set(new ProbeResult(revision, reachable));
+                        BUSY.set(false);
+                    }
                 });
             }
         } catch (Exception e) {
@@ -109,7 +158,12 @@ public final class Bridge {
     }
 
     public static boolean privateHost(String host) {
-        return host != null && Directory.allowedHost(host) && host.equals(applied);
+        if (!Directory.allowedHost(host)) return false;
+        if (host.equals(applied)) return true;
+        // A Settings edit can authenticate before the next client tick. Tag
+        // that request immediately instead of letting the addon gate reject it.
+        try { return host.equals(currentHost()); }
+        catch (Exception e) { return false; }
     }
 
     public static HttpRequest tag(HttpRequest request) {

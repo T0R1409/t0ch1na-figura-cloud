@@ -25,7 +25,7 @@ for name, url in URLS.items():
         with urllib.request.urlopen(url, timeout=90) as r:
             (DEPS / name).write_bytes(r.read())
 
-VERSION = '1.0.0-beta.2'
+VERSION = '1.0.0-beta.3'
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 MIXINS = {
