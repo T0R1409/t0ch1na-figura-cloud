@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "cloudId": "t0ch1na",
-  "online": false,
-  "hostname": "",
-  "updatedAt": "2026-11-17T00:00:00Z",
-  "expiresAt": "2026-11-17T00:00:00Z"
+  "online": true,
+  "hostname": "departments-whole-scripts-aid.trycloudflare.com",
+  "updatedAt": "2026-11-16T17:36:13.113528Z",
+  "expiresAt": "2026-11-16T17:56:13.113528Z"
 }
