@@ -1,7 +1,7 @@
 # T-Zero Auto Figura IP
 
-ม็อดเสริมฝั่งผู้เล่นสำหรับ Figura **0.1.6** บน Fabric / Minecraft Forge / NeoForge
-รองรับ Minecraft **1.20.1 และ 1.21.1**
+ม็อดเสริมฝั่งผู้เล่นสำหรับ Figura บน Fabric / Forge / NeoForge / Quilt
+ดูเวอร์ชันเกมและรุ่น Figura ที่ต้องใช้ใน [หน้าดาวน์โหลด](DOWNLOADS.md)
 
 ## พฤติกรรม — ตรวจสูงสุด 15 วินาทีก่อนเลือกคลาวด์ครั้งแรก
 
@@ -24,33 +24,15 @@
 อ่านอายุประกาศเทียบ HTTP Date ของ GitHub เมื่อมี เพื่อลดปัญหานาฬิกาคอมคลาดเคลื่อน
 ไม่ได้ข้ามการตรวจสอบ HTTPS certificate
 
-## ดาวน์โหลดสำหรับผู้เล่น
+## ดาวน์โหลดสำหรับผู้เล่น — beta 7 ทุกเวอร์ชันที่ตรวจพบ
 
-เลือก **เพียง 1 ไฟล์** ให้ตรงกับ instance ใน Prism ของคุณ:
+เปิด **[หน้าดาวน์โหลดแยกตามเวอร์ชัน Minecraft](DOWNLOADS.md)**
+มี 40 ไฟล์ใน 15 เวอร์ชันเกม ตั้งแต่ 1.16.5 ถึง 1.21.4
+ครอบคลุม Fabric, Forge, NeoForge และ Quilt ตามไฟล์ Figura ที่เผยแพร่จริง
+อ่านข้อจำกัดของ Modrinth tags, Figura รุ่นที่ต้องใช้ และสถานะรุ่นทดลองในหน้านั้น
 
-| Minecraft | Loader | JAR |
-|---|---|---|
-| 1.20.1 | fabric | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-fabric.jar |
-| 1.20.1 | forge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-forge.jar |
-| 1.20.1 | neoforge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-neoforge.jar |
-| 1.21.1 | fabric | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-fabric.jar |
-| 1.21.1 | forge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-forge.jar |
-| 1.21.1 | neoforge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-neoforge.jar |
-
-ปิดเกม → Prism: คลิกขวา instance → Edit → Mods → Add File → เลือก JAR
-ต้องมี Figura 0.1.6 ของ loader/เวอร์ชันเดียวกันอยู่ด้วย ไม่มี Figura อยู่ใน JAR นี้
-ฝั่ง Minecraft server ไม่ต้องลง addon นี้
-
-**NeoForge 1.21.1:** ใช้ Figura 0.1.6 รุ่น NeoForge + AutoCloud neoforge-1.21.1
-
-**NeoForge 1.20.1 (legacy ทดลอง):** ใช้ loader NeoForge สาย 47.x + Figura 0.1.6 รุ่น Forge
-+ AutoCloud neoforge-1.20.1 รุ่นนี้ compile กับ NeoForge language-java 47.2.2
-และตรวจ metadata ของ NeoForge 1.20.1-47.1.106 แล้ว ซึ่งยังใช้ mod ID forge และ namespace net.minecraftforge
-Figura ไม่ได้เผยแพร่ JAR ที่ติดป้าย NeoForge 1.20.1 โดยตรง จึงยังต้องทดสอบความเข้ากันได้ในเกม
-ไฟล์ NeoForge 1.21.1 ใช้แทนตัว 1.20.1 ไม่ได้
-1.20.1 ใช้ Java 17 ขึ้นไป, 1.21.1 ใช้ Java 21
-ม็อดนี้ควบคุม Figura Cloud IP ขณะเปิดเกม การแก้ช่องนั้นด้วยมือจะถูกระบบเลือกให้อีกครั้ง
-ถ้าต้องการหยุดระบบอัตโนมัติ ให้ปิดเกมแล้วเอา AutoCloud ออกจาก Mods
+ปิดเกม → เอา AutoCloud/T-Zero รุ่นเก่าออก (เก็บ Figura ไว้) → Prism: Edit → Mods → Add File
+เลือกไฟล์เพียงหนึ่งไฟล์ให้ตรง Minecraft และ loader
 
 ## อัปเกรดเครื่องโฮสต์ Windows 11 — ทำครั้งเดียว
 
@@ -113,32 +95,21 @@ publisher ใช้ GitHub Contents API อัปเดตเมื่อ URL/�
 
 ## Build / ตรวจสอบ
 
-ติดตั้ง Java 21 และ Python 3 แล้วรัน `python build.py`
-ตัว build ดาวน์โหลด Eclipse ECJ, Mixin และ loader API เพื่อ compile Java 17 bytecode (NeoForge 1.21.1 เป็น Java 21 bytecode)
-ไม่มีการแจก library เหล่านั้นหรือ Minecraft รวมใน addon JAR
+ใช้ Python 3.11+ และ Java 21 เพื่อ build (ตัว build ดาวน์โหลด ECJ และ loader annotation API)
 
 ```sh
 python build.py
-java -jar deps/ecj.jar -17 -proc:none -cp build/1.20.1-fabric:deps/gson.jar -d build/tests tests/PolicyTest.java
-java -cp build/tests:build/1.20.1-fabric:deps/gson.jar PolicyTest
-python -m pip install -r host/requirements.txt
-python -m unittest discover -s tests -v
+python package_all.py
 ```
 
-บน Windows เปลี่ยนตัวคั่น classpath จาก `:` เป็น `;`
-`tests/verify_figura_contract.py` ตรวจชื่อ/descriptor จริงใน Figura 5 JAR (legacy 1.20.1 ใช้ Figura Forge ร่วมกัน)
-โดยคาดว่าไฟล์อยู่ที่ `../figura-cloud/clients/`
-Mixin ใช้ remap=false และแตะเฉพาะคลาส Figura ที่ชื่อเหมือนกันทั้ง loader/game versions
-ไม่มีการอ้างชื่อคลาส Minecraft ที่ต้อง remap
+`support-matrix.json` ล็อกรายการ Figura และ SHA-512 ของไฟล์ SDK ที่ตรวจแล้ว
+ถ้าต้องการอัปเดตรายการจาก Modrinth/GitHub ให้รัน `python prepare_support_matrix.py`
+ตัวเตรียม matrix จะตรวจ method/field descriptors กับ binary จริง และหยุดเมื่อ API ไม่ตรง
+ไม่ได้แจก Figura หรือ library ตัวอื่นรวมกับ addon
 
-## ชื่อและภาพประกอบ beta 6
+`generate_legacy_sources.py` แปลง controller ร่วมเป็น Java 8 สำหรับ 1.16.5
+โดยใช้ HttpURLConnection สำหรับ discovery และ Apache HTTP สำหรับ header ของ Figura
+ตัว Quilt 0.1.2 ใช้ namespace `fabric.org.figuramc.figura` และ WebsocketThingy constructor hook
+ตัว Forge ใช้ Mod annotation รูปแบบเดียวกันที่คงเดิมระหว่างสาย 36–54; ไม่มีการอ้างชื่อคลาส Minecraft โดยตรง
 
-ชื่อม็อด: T-Zero Auto Figura IP
-
-คำบรรยาย:
-
-จัดทำโดย
-
-⋆. 𐙚˚࿔ T-Zero 𝜗𝜚˚⋆
-
-ใช้ไฟล์โลโก้ PNG ต้นฉบับที่ผู้ใช้แนบมาในทุก JAR
+รุ่นนี้ยังเป็น beta ดูผลทดสอบและขอบเขตใน VALIDATION.md
