@@ -33,7 +33,7 @@ def create_app(data_dir=None, max_size=None, verifier=None):
     async def addon_required(req, handler):
         if (req.path.startswith('/api') or req.path == '/ws') and os.getenv('REQUIRE_ADDON', '1') != '0':
             if req.headers.get('X-T0CH1NA-Addon') != '1':
-                raise web.HTTPForbidden(text='Install T0CH1NA Figura AutoCloud before using this cloud')
+                raise web.HTTPForbidden(text='Install T-Zero Auto Figura IP before using this cloud')
         return await handler(req)
 
     app = web.Application(client_max_size=limit + 1, middlewares=[addon_required])
@@ -151,7 +151,7 @@ def create_app(data_dir=None, max_size=None, verifier=None):
 
     async def motd(req):
         user(req)
-        return web.json_response({"text": "T0CH1NA FIGURA CLOUD\nผู้สร้างและดูแล: T0CH1NA\n\nบริการอวาตาร์สำหรับคนในเซิร์ฟ\nเก็บได้บัญชีละ 1 ตัว สูงสุด 10 MiB\n\nวิธีใช้\n1. ตั้ง Figura Cloud IP เป็น\n   ลิงก์ล่าสุดที่ T0CH1NA แจ้ง\n2. เชื่อมต่อ แล้วกดอัปโหลดอวาตาร์\n3. เพื่อนต้องใช้คลาวด์เดียวกัน\n   จึงจะเห็นอวาตาร์ของกันและกัน\n\nต้องใช้บัญชี Minecraft Java แท้\nบริการใช้ได้ขณะเครื่องโฮสต์ออนไลน์\nหากเข้าไม่ได้ ติดต่อ T0CH1NA"})
+        return web.json_response({"text": "จัดทำโดย\n\n⋆. 𐙚˚࿔ T-Zero 𝜗𝜚˚⋆"})
 
     async def profile(req):
         user(req)

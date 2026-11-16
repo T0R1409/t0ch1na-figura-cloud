@@ -1,0 +1,8 @@
+31f10f36ee0665339aac3c657901fe96bc23aa8057deb5adbf1357e0a7e6e8b6  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-fabric.jar
+7423acf09902f09ac0ed6f6e64eea011290ed1a84ffefd830067baae28e195f8  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-forge.jar
+d2ee7c0b9817e8f02f14266b0725852ec6f3de04311b3bc6849a66c3d2416307  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-neoforge.jar
+afbda6103d57b62cd8a5e1e78e99d094c59c9da34c8c837bed67c833f01433ea  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-fabric.jar
+516f57ff97824e0315d18f9c3b61021529902b760fa6d654736011bd41b48744  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-forge.jar
+0fa144aa262ee7e713b0c55c51993789a3b2208e093b569ddd822c8f3d448551  T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-neoforge.jar
+095c020b7b2334e6a72d20653f600a2c766f6b3bff3ec3af2e164606420efcc7  T-Zero-Auto-Figura-IP-beta6.zip
+d7648438cc66e979f5fdc3a50a479823fdfe50e30dfd6b8ce9bcd426e3426652  T-Zero-Update-Credit.ps1

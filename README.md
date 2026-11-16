@@ -1,9 +1,9 @@
-# T0CH1NA Figura AutoCloud — รุ่นทดลอง
+# T-Zero Auto Figura IP
 
 ม็อดเสริมฝั่งผู้เล่นสำหรับ Figura **0.1.6** บน Fabric / Minecraft Forge / NeoForge
 รองรับ Minecraft **1.20.1 และ 1.21.1**
 
-## พฤติกรรม beta 5 — ตรวจสูงสุด 15 วินาทีก่อนเลือกคลาวด์ครั้งแรก
+## พฤติกรรม — ตรวจสูงสุด 15 วินาทีก่อนเลือกคลาวด์ครั้งแรก
 
 - ตอน Figura โหลด config เริ่มอ่าน GitHub และตรวจ /health ใน worker แยก
 - ระหว่างรอตัดสินใจ ยังไม่เริ่มการยืนยันตัวตนคลาวด์ของ Figura เกมและ UI ไม่ถูกบล็อก
@@ -30,12 +30,12 @@
 
 | Minecraft | Loader | JAR |
 |---|---|---|
-| 1.20.1 | fabric | t0ch1na-autocloud-1.0.0-beta.5-1.20.1-fabric.jar |
-| 1.20.1 | forge | t0ch1na-autocloud-1.0.0-beta.5-1.20.1-forge.jar |
-| 1.20.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.5-1.20.1-neoforge.jar |
-| 1.21.1 | fabric | t0ch1na-autocloud-1.0.0-beta.5-1.21.1-fabric.jar |
-| 1.21.1 | forge | t0ch1na-autocloud-1.0.0-beta.5-1.21.1-forge.jar |
-| 1.21.1 | neoforge | t0ch1na-autocloud-1.0.0-beta.5-1.21.1-neoforge.jar |
+| 1.20.1 | fabric | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-fabric.jar |
+| 1.20.1 | forge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-forge.jar |
+| 1.20.1 | neoforge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.20.1-neoforge.jar |
+| 1.21.1 | fabric | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-fabric.jar |
+| 1.21.1 | forge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-forge.jar |
+| 1.21.1 | neoforge | T-Zero-Auto-Figura-IP-1.0.0-beta.6-1.21.1-neoforge.jar |
 
 ปิดเกม → Prism: คลิกขวา instance → Edit → Mods → Add File → เลือก JAR
 ต้องมี Figura 0.1.6 ของ loader/เวอร์ชันเดียวกันอยู่ด้วย ไม่มี Figura อยู่ใน JAR นี้
@@ -130,3 +130,15 @@ python -m unittest discover -s tests -v
 โดยคาดว่าไฟล์อยู่ที่ `../figura-cloud/clients/`
 Mixin ใช้ remap=false และแตะเฉพาะคลาส Figura ที่ชื่อเหมือนกันทั้ง loader/game versions
 ไม่มีการอ้างชื่อคลาส Minecraft ที่ต้อง remap
+
+## ชื่อและภาพประกอบ beta 6
+
+ชื่อม็อด: T-Zero Auto Figura IP
+
+คำบรรยาย:
+
+จัดทำโดย
+
+⋆. 𐙚˚࿔ T-Zero 𝜗𝜚˚⋆
+
+ใช้ไฟล์โลโก้ PNG ต้นฉบับที่ผู้ใช้แนบมาในทุก JAR

@@ -139,7 +139,7 @@ public final class Bridge {
         shownStatus = statusMessage;
         try {
             figura("gui.FiguraToast").getMethod("sendToast", Object.class, Object.class)
-                    .invoke(null, "T0CH1NA AutoCloud", statusMessage);
+                    .invoke(null, "T-Zero Auto Figura IP", statusMessage);
         } catch (Exception e) {
             LOG.log(System.Logger.Level.DEBUG, "Toast unavailable: " + e.getClass().getSimpleName());
         }

@@ -25,7 +25,11 @@ for name, url in URLS.items():
         with urllib.request.urlopen(url, timeout=90) as r:
             (DEPS / name).write_bytes(r.read())
 
-VERSION = '1.0.0-beta.5'
+VERSION = '1.0.0-beta.6'
+DISPLAY_NAME = 'T-Zero Auto Figura IP'
+AUTHOR = '⋆. 𐙚˚࿔ T-Zero 𝜗𝜚˚⋆'
+DESCRIPTION = 'จัดทำโดย\n\n' + AUTHOR
+ICON = ROOT / 'src/main/resources/icon.png'
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 MIXINS = {
@@ -34,6 +38,8 @@ MIXINS = {
     'client': ['BootstrapMixin', 'NetworkMixin', 'HttpMixin', 'AuthMixin', 'SocketMixin'],
     'injectors': {'defaultRequire': 1},
 }
+if not ICON.is_file():
+    raise FileNotFoundError('Original user logo required at src/main/resources/icon.png')
 common = list((ROOT/'src/main/java').rglob('*.java'))
 for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52', 21)]:
     for loader in ['fabric', 'forge', 'neoforge']:
@@ -46,7 +52,7 @@ for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52',
         sources = common + list((ROOT/f'src/{source_loader}/java').rglob('*.java'))
         subprocess.run(['java', '-jar', str(DEPS/'ecj.jar'), '-21' if neo_current else '-17', '-proc:none', '-encoding', 'UTF-8',
                         '-cp', cp, '-d', str(classes)] + [str(s) for s in sources], check=True)
-        name = f't0ch1na-autocloud-{VERSION}-{game}-{loader}.jar'
+        name = f'T-Zero-Auto-Figura-IP-{VERSION}-{game}-{loader}.jar'
         with zipfile.ZipFile(DIST/name, 'w', zipfile.ZIP_DEFLATED) as z:
             for p in sorted(classes.rglob('*.class')):
                 z.write(p, p.relative_to(classes).as_posix())
@@ -55,12 +61,14 @@ for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52',
             z.writestr('t0ch1na-autocloud.mixins.json', json.dumps(mixins))
             z.writestr('META-INF/MANIFEST.MF', 'Manifest-Version: 1.0\nMixinConfigs: t0ch1na-autocloud.mixins.json\n\n')
             z.write(ROOT/'LICENSE', 'LICENSE')
+            z.write(ROOT/'ARTWORK.md', 'ARTWORK.md')
+            z.write(ICON, 'icon.png')
             if loader == 'fabric':
                 z.writestr('fabric.mod.json', json.dumps({
                     'schemaVersion': 1, 'id': 't0ch1na_autocloud', 'version': VERSION,
-                    'name': 'T0CH1NA Figura AutoCloud', 'environment': 'client',
-                    'description': 'Bounded startup cloud discovery with automatic private/official cloud selection.',
-                    'authors': ['T0CH1NA'], 'license': 'MIT',
+                    'name': DISPLAY_NAME, 'environment': 'client',
+                    'description': DESCRIPTION, 'icon': 'icon.png',
+                    'authors': [AUTHOR], 'license': 'MIT',
                     'entrypoints': {'client': ['dev.t0ch1na.autocloud.FabricEntrypoint']},
                     'mixins': ['t0ch1na-autocloud.mixins.json'],
                     'depends': {'fabricloader': '>=0.15.0', 'minecraft': game,
@@ -73,9 +81,10 @@ license="MIT"
 [[mods]]
 modId="t0ch1na_autocloud"
 version="{VERSION}"
-displayName="T0CH1NA Figura AutoCloud"
-authors="T0CH1NA"
-description="Bounded startup cloud discovery with automatic private/official cloud selection."
+displayName="{DISPLAY_NAME}"
+logoFile="icon.png"
+authors={json.dumps(AUTHOR, ensure_ascii=False)}
+description={json.dumps(DESCRIPTION, ensure_ascii=False)}
 [[dependencies.t0ch1na_autocloud]]
 modId="neoforge"
 type="required"
@@ -104,10 +113,11 @@ license="MIT"
 [[mods]]
 modId="t0ch1na_autocloud"
 version="{VERSION}"
-displayName="T0CH1NA Figura AutoCloud"
-authors="T0CH1NA"
+displayName="{DISPLAY_NAME}"
+logoFile="icon.png"
+authors={json.dumps(AUTHOR, ensure_ascii=False)}
 displayTest="IGNORE_SERVER_VERSION"
-description="Discovers T0CH1NA cloud and uses official Figura temporarily when unavailable."
+description={json.dumps(DESCRIPTION, ensure_ascii=False)}
 [[dependencies.t0ch1na_autocloud]]
 modId="minecraft"
 mandatory=true
