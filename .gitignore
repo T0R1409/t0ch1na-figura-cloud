@@ -1,0 +1,7 @@
+/deps/
+/build/
+/dist/
+__pycache__/
+*.pyc
+*.token
+.env

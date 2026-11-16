@@ -1,0 +1,43 @@
+services:
+  backend:
+    environment:
+      REQUIRE_ADDON: "1"
+  tunnel:
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:20241 --url http://backend:8080
+  dashboard:
+    image: python:3.12-slim
+    restart: unless-stopped
+    command: python -u /app/dashboard.py
+    volumes:
+      - ./dashboard.py:/app/dashboard.py:ro
+    ports:
+      - "127.0.0.1:8787:8787"
+    depends_on:
+      - tunnel
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 64m
+    security_opt:
+      - no-new-privileges:true
+  publisher:
+    image: python:3.12-slim
+    restart: unless-stopped
+    command: python -u /app/publisher.py
+    environment:
+      GITHUB_REPOSITORY: T0R1409/t0ch1na-figura-cloud
+    volumes:
+      - ./publisher.py:/app/publisher.py:ro
+    secrets:
+      - github_token
+    depends_on:
+      - tunnel
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 64m
+    security_opt:
+      - no-new-privileges:true
+secrets:
+  github_token:
+    file: ./.github-publisher.token
