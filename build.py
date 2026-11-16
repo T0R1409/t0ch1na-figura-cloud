@@ -25,7 +25,7 @@ for name, url in URLS.items():
         with urllib.request.urlopen(url, timeout=90) as r:
             (DEPS / name).write_bytes(r.read())
 
-VERSION = '1.0.0-beta.4'
+VERSION = '1.0.0-beta.5'
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 MIXINS = {
@@ -59,7 +59,7 @@ for game, forge_version, java_version in [('1.20.1', '47', 17), ('1.21.1', '52',
                 z.writestr('fabric.mod.json', json.dumps({
                     'schemaVersion': 1, 'id': 't0ch1na_autocloud', 'version': VERSION,
                     'name': 'T0CH1NA Figura AutoCloud', 'environment': 'client',
-                    'description': 'Private Figura cloud forced at startup with automatic hostname updates.',
+                    'description': 'Bounded startup cloud discovery with automatic private/official cloud selection.',
                     'authors': ['T0CH1NA'], 'license': 'MIT',
                     'entrypoints': {'client': ['dev.t0ch1na.autocloud.FabricEntrypoint']},
                     'mixins': ['t0ch1na-autocloud.mixins.json'],
@@ -75,7 +75,7 @@ modId="t0ch1na_autocloud"
 version="{VERSION}"
 displayName="T0CH1NA Figura AutoCloud"
 authors="T0CH1NA"
-description="Private Figura cloud forced at startup with automatic hostname updates."
+description="Bounded startup cloud discovery with automatic private/official cloud selection."
 [[dependencies.t0ch1na_autocloud]]
 modId="neoforge"
 type="required"
@@ -107,7 +107,7 @@ version="{VERSION}"
 displayName="T0CH1NA Figura AutoCloud"
 authors="T0CH1NA"
 displayTest="IGNORE_SERVER_VERSION"
-description="Forces T0CH1NA private cloud at startup and follows its latest hostname."
+description="Discovers T0CH1NA cloud and uses official Figura temporarily when unavailable."
 [[dependencies.t0ch1na_autocloud]]
 modId="minecraft"
 mandatory=true

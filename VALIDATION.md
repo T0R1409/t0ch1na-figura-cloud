@@ -1,24 +1,23 @@
-# Validation — 1.0.0-beta.4
+# Validation — 1.0.0-beta.5
 
 Passed:
-- Six JARs compile against Fabric, Forge, modern NeoForge and legacy NeoForge APIs.
-- Startup hook ConfigManager.loadConfig()V and every other mixin/reflection target verified in five official Figura JARs.
-- Private-only policy: fresh official default selects bundled private host, saved host retained,
-  1000 failed probes never select official, newer hostname adopted, stale probe rejected, official hostname rejected.
-- Mock Figura controller regression: bootstrap forces IP before first client tick/authentication;
-  headers apply before Settings tick; manual edits, stale results, loading-state preservation,
-  latest-host recovery, queue clearing, local preview retention and Settings reset restoration.
-- Outage controller test retains private hostname through repeated failed probes.
-- Earlier host/backend/publisher protocol tests remain applicable; host code is unchanged.
+- All six loader/game JARs compile with their real loader APIs.
+- Startup config hook, cancellable AuthHandler.auth(boolean), toast overload, and all other
+  mixin/reflection targets verified in five real official Figura 0.1.6 JARs.
+- Selection policy: no first choice until evidence or deadline; early READY/OFFLINE; UNKNOWN
+  remains pending; exact 15s timeout to official; later recovery; conservative runtime fallback;
+  old results cannot clobber a manual edit; official requests never receive private addon header.
+- Directory transport fixtures: raw endpoint success, public API fallback, cooldown and cached
+  discovered hostname, HTTP server time validation, offline versus network errors, rejection of
+  invalid/expired documents, and a total 15s probe budget across raw/API/health requests.
+- Mock Figura controller: startup auth gate, failed lookup does not immediately authenticate,
+  timeout starts official auth, later result starts private auth, stale manual-edit result ignored.
+- Six release JAR metadata and sorted ZIP payload hashes checked.
 
 Not performed:
-- Interactive Minecraft startup across the six loader/game combinations.
-- Real end-to-end test from the friend's computer.
+- Interactive Minecraft launch for six loader/game combinations.
+- Actual toast display in Minecraft.
+- An end-to-end test from the friend's computer or that computer's network.
 
-The startup Mixin attaches after Figura finishes loading its configuration, before Figura
-starts its normal cloud connection. The mock regression exercises bootstrap directly;
-the separate contract check verifies the real released injection method exists.
-
-Bundled bootstrap hostname: departments-whole-scripts-aid.trycloudflare.com
-It is a fallback private address, not a stable domain. GitHub access is still required to
-learn future hostname changes. No official-cloud fallback exists in this version.
+The mock controller invokes startup/bootstrap directly; real Mixin target descriptors are
+checked separately. Host/backend/publisher code is unchanged from the deployed host version.

@@ -37,12 +37,13 @@ TARGETS={
                            ('backendStatus','I'),('API_REQUESTS','Ljava/util/concurrent/ConcurrentLinkedQueue;'),
                            ('WS_REQUESTS','Ljava/util/concurrent/ConcurrentLinkedQueue;')],
  'backend2/HttpAPI': [('header','(Ljava/lang/String;)Ljava/net/http/HttpRequest$Builder;')],
- 'backend2/AuthHandler':[('request','(Ljava/net/http/HttpRequest;)Ljava/lang/String;')],
+ 'backend2/AuthHandler':[('auth','(Z)V'),('request','(Ljava/net/http/HttpRequest;)Ljava/lang/String;')],
  'backend2/trust/KeyStoreHelper':[('websocketWithBackendCertificates','(Ljava/lang/String;)Lcom/neovisionaries/ws/client/WebSocket;')],
  'config/Configs':[('SERVER_IP','Lorg/figuramc/figura/config/ConfigType$IPConfig;')],
  'config/ConfigType':[('value','Ljava/lang/Object;'),('tempValue','Ljava/lang/Object;')],
  'config/ConfigManager':[('saveConfig','()V'),('loadConfig','()V')],
  'avatar/AvatarManager':[('clearAvatars','(Ljava/util/UUID;)V'),('LOADED_USERS','Ljava/util/Map;')],
+ 'gui/FiguraToast':[('sendToast','(Ljava/lang/Object;Ljava/lang/Object;)V')],
  'FiguraMod':[('isLocal','(Ljava/util/UUID;)Z')],
 }
 

@@ -5,7 +5,6 @@ import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.LinkedHashSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,102 +27,121 @@ public final class Bridge {
     private static boolean hasProbed;
     private static long lastAuth;
     private static boolean disabled;
+    private static volatile boolean startupWaiting = true;
+    private static String statusMessage = "กำลังตรวจคลาวด์ สูงสุด 15 วินาที";
+    private static String shownStatus;
     private static final long INTERVAL = 15_000_000_000L;
 
     private Bridge() {}
 
-    private record ProbeResult(long revision, String reachable) {}
+    private record ProbeResult(long revision, Directory.Result result) {}
+
+    /** AuthHandler calls this before launching Mojang authentication. */
+    public static boolean deferAuthentication() { return startupWaiting; }
+
+    private static long millis(long nanos) { return java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(nanos); }
 
     public static void tick() {
         if (disabled) return;
         try {
             long now = System.nanoTime();
-            String current = currentHost();
             if (selector == null) bootstrap();
-            current = currentHost();
-            if (!Directory.allowedHost(current)) {
-                // A Settings reset or manual official IP must never opt out of
-                // this private-only mode while the addon is installed.
-                switchHost(selector.selected());
-                current = selector.selected();
-                lastAuth = now;
-            } else if (!current.equals(applied)) {
-                selector.adopt(current);
+            String current = currentHost();
+            if (!current.equals(applied)) {
+                selector.adopt(current, millis(now));
                 applied = current;
-                verifiedHost = current;
+                if (Directory.allowedHost(current)) verifiedHost = current;
                 lastAuth = now;
                 hasProbed = false;
-                LOG.log(System.Logger.Level.INFO, "Checking manually selected cloud: " + current);
+                setStatus("กำลังตรวจคลาวด์ที่เลือกใหม่");
             }
-
+            boolean wasWaiting = selector.waiting();
             ProbeResult result = PENDING.getAndSet(null);
-            if (result != null && result.revision() == selector.revision()) {
-                String target = selector.update(result.reachable(), result.revision());
-                if (result.reachable() != null) verifiedHost = result.reachable();
-                if (!target.equals(current)) {
-                    switchHost(target);
-                    lastAuth = now;
-                    current = target;
-                }
+            boolean accepted = result != null && result.revision() == selector.revision();
+            if (accepted) {
+                selector.update(result.result(), millis(now), result.revision());
+                if (result.result().state() == Directory.State.READY) {
+                    verifiedHost = result.result().host();
+                    setStatus("พบคลาวด์ส่วนตัว กำลังเชื่อมต่อ");
+                } else setStatus(result.result().message());
             }
-
-            // A slow authentication in state 2 is left alone. Retry only an
-            // explicitly disconnected backend, not one that is still loading.
-            if (now - lastAuth >= 30_000_000_000L && backendStatus() == 1) {
+            String target = selector.tick(millis(now));
+            startupWaiting = selector.waiting();
+            if (wasWaiting && !startupWaiting && Selection.OFFICIAL.equals(target)) {
+                setStatus(accepted && result.result().state() == Directory.State.OFFLINE
+                        ? "คลาวด์ส่วนตัวปิด ใช้ Figura ทางการชั่วคราวและตรวจต่อ"
+                        : "ตรวจไม่ทัน 15 วินาที ใช้ Figura ทางการชั่วคราวและตรวจต่อ");
+            }
+            if (!startupWaiting && ((!target.equals(current)) || wasWaiting)) {
+                if (Selection.OFFICIAL.equals(target) && !wasWaiting)
+                    setStatus("ติดต่อคลาวด์ส่วนตัวไม่ได้ ใช้ Figura ทางการชั่วคราวและตรวจต่อ");
+                switchHost(target);
+                lastAuth = now;
+            }
+            if (!startupWaiting && now - lastAuth >= 30_000_000_000L && backendStatus() == 1) {
                 figura("backend2.NetworkStuff").getMethod("reAuth").invoke(null);
                 lastAuth = now;
             }
-
-            if ((!hasProbed || now - lastProbe >= INTERVAL) && BUSY.compareAndSet(false, true)) {
-                lastProbe = now;
-                hasProbed = true;
-                long revision = selector.revision();
-                String configuredHost = current;
-                String cachedHost = verifiedHost;
-                WORKER.execute(() -> {
-                    String reachable = null;
-                    try {
-                        LinkedHashSet<String> candidates = new LinkedHashSet<>();
-                        try {
-                            String discovered = DIRECTORY.discover();
-                            if (discovered != null) candidates.add(discovered);
-                        } catch (Exception e) {
-                            LOG.log(System.Logger.Level.DEBUG, "Directory check: " + e.getClass().getSimpleName());
-                        }
-                        if (Directory.allowedHost(configuredHost)) candidates.add(configuredHost);
-                        if (Directory.allowedHost(cachedHost)) candidates.add(cachedHost);
-                        for (String candidate : candidates) {
-                            if (DIRECTORY.healthy(candidate)) { reachable = candidate; break; }
-                        }
-                    } catch (Exception e) {
-                        LOG.log(System.Logger.Level.WARNING, "Cloud probe failed: " + e.getClass().getSimpleName());
-                    } finally {
-                        PENDING.set(new ProbeResult(revision, reachable));
-                        BUSY.set(false);
-                    }
-                });
-            }
+            startProbe(now);
+            showStatus();
         } catch (Exception e) {
             disabled = true;
-            LOG.log(System.Logger.Level.ERROR, "Unsupported Figura API; AutoCloud disabled", e);
+            startupWaiting = false;
+            LOG.log(System.Logger.Level.ERROR, "AutoCloud disabled: incompatible Figura API", e);
         }
     }
 
-    /** Called by ConfigManager.loadConfig before Figura starts cloud authentication. */
+    private static void startProbe(long now) {
+        if ((!hasProbed || now - lastProbe >= INTERVAL) && BUSY.compareAndSet(false, true)) {
+            lastProbe = now;
+            hasProbed = true;
+            long revision = selector.revision();
+            String configuredHost = applied;
+            String cachedHost = verifiedHost;
+            WORKER.execute(() -> {
+                Directory.Result result;
+                try { result = DIRECTORY.probe(configuredHost, cachedHost); }
+                catch (Exception e) { result = new Directory.Result(null, Directory.State.UNKNOWN, "ตรวจคลาวด์ไม่สำเร็จ: " + e.getClass().getSimpleName()); }
+                PENDING.set(new ProbeResult(revision, result));
+                BUSY.set(false);
+            });
+        }
+    }
+
+    /** Prepare asynchronous discovery; never block Figura's configuration load. */
     public static void bootstrap() {
         try {
-            String saved = currentHost();
-            String target = Directory.allowedHost(saved) ? saved : Directory.INITIAL_HOST;
-            writeHost(target);
-            if (selector == null) selector = new Selection(target);
-            else selector.adopt(target);
-            applied = target;
-            verifiedHost = target;
+            long now = System.nanoTime();
+            String current = currentHost();
+            if (selector == null) selector = new Selection(current, millis(now));
+            else selector.adopt(current, millis(now));
+            startupWaiting = selector.waiting();
+            applied = current;
+            if (Directory.allowedHost(current)) verifiedHost = current;
             hasProbed = false;
-            lastAuth = System.nanoTime() - 30_000_000_000L;
-            LOG.log(System.Logger.Level.INFO, "Private cloud set during Figura startup: " + target);
+            lastAuth = now;
+            setStatus("กำลังตรวจลิงก์และคลาวด์ สูงสุด 15 วินาที");
+            startProbe(now);
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to initialize T0CH1NA private cloud", e);
+            startupWaiting = false;
+            LOG.log(System.Logger.Level.ERROR, "Unable to prepare AutoCloud discovery", e);
+        }
+    }
+
+    private static void setStatus(String message) {
+        if (!message.equals(statusMessage)) {
+            statusMessage = message;
+            LOG.log(System.Logger.Level.INFO, "AutoCloud: " + message);
+        }
+    }
+    private static void showStatus() {
+        if (statusMessage.equals(shownStatus)) return;
+        shownStatus = statusMessage;
+        try {
+            figura("gui.FiguraToast").getMethod("sendToast", Object.class, Object.class)
+                    .invoke(null, "T0CH1NA AutoCloud", statusMessage);
+        } catch (Exception e) {
+            LOG.log(System.Logger.Level.DEBUG, "Toast unavailable: " + e.getClass().getSimpleName());
         }
     }
 

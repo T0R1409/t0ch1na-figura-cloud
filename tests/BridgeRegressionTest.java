@@ -1,72 +1,33 @@
-import dev.t0ch1na.autocloud.Bridge;
-import dev.t0ch1na.autocloud.Selection;
-import dev.t0ch1na.autocloud.Directory;
+import dev.t0ch1na.autocloud.*;
 import org.figuramc.figura.config.Configs;
-import org.figuramc.figura.config.ConfigManager;
 import org.figuramc.figura.backend2.NetworkStuff;
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
+import java.lang.reflect.*;
+import java.util.concurrent.atomic.*;
 public class BridgeRegressionTest {
- private static void eq(Object expected,Object actual){if(!java.util.Objects.equals(expected,actual))throw new AssertionError(expected+" != "+actual);}
- private static Object field(String name)throws Exception{Field f=Bridge.class.getDeclaredField(name);f.setAccessible(true);return f.get(null);}
- @SuppressWarnings("unchecked")
- private static void result(long revision,String host)throws Exception{
+ static void eq(Object e,Object a){if(!java.util.Objects.equals(e,a))throw new AssertionError(e+" != "+a);}
+ static Object field(String name)throws Exception{Field f=Bridge.class.getDeclaredField(name);f.setAccessible(true);return f.get(null);}
+ @SuppressWarnings("unchecked") static void result(long revision,Directory.Result value)throws Exception{
   Class<?> c=Class.forName("dev.t0ch1na.autocloud.Bridge$ProbeResult");
-  var constructor=c.getDeclaredConstructor(long.class,String.class);constructor.setAccessible(true);
-  ((AtomicReference<Object>)field("PENDING")).set(constructor.newInstance(revision,host));
+  var ctor=c.getDeclaredConstructor(long.class,Directory.Result.class);ctor.setAccessible(true);
+  ((AtomicReference<Object>)field("PENDING")).set(ctor.newInstance(revision,value));
  }
  public static void main(String[] args)throws Exception{
-  // Keep actual HTTP out of this deterministic controller test.
   ((AtomicBoolean)field("BUSY")).set(true);
-  Configs.SERVER_IP.value="figura.moonlight-devs.org";
-  Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
-  Bridge.bootstrap();
-  eq(Directory.INITIAL_HOST,Configs.SERVER_IP.value);
-  eq(0,NetworkStuff.authentications);
-  Bridge.tick();
-  eq(Directory.INITIAL_HOST,Configs.SERVER_IP.value);
-  eq(0,NetworkStuff.disconnects);eq(0,ConfigManager.saves);eq(0,NetworkStuff.authentications);
+  Configs.SERVER_IP.value=Selection.OFFICIAL;Configs.SERVER_IP.tempValue=Selection.OFFICIAL;
+  Bridge.bootstrap();Bridge.tick();
+  eq(true,Bridge.deferAuthentication());eq(0,NetworkStuff.authentications);eq(0,NetworkStuff.disconnects);
   Selection selection=(Selection)field("selector");
-  long old=selection.revision();
-  Configs.SERVER_IP.value="manual.trycloudflare.com";
-  Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
-  // Header tagging works even BEFORE the next tick adopts the Settings edit.
-  HttpRequest auth=HttpRequest.newBuilder(URI.create("https://manual.trycloudflare.com/api/auth/id")).build();
-  eq("1",Bridge.tag(auth).headers().firstValue(Directory.HEADER).orElse(null));
-  result(old,null);Bridge.tick();
-  eq("manual.trycloudflare.com",Configs.SERVER_IP.value);
-  eq(0,NetworkStuff.disconnects);eq(0,NetworkStuff.authentications);
-  // A new failed probe does not interrupt an in-flight Figura login.
-  result(selection.revision(),null);Bridge.tick();
-  eq("manual.trycloudflare.com",Configs.SERVER_IP.value);eq(2,NetworkStuff.backendStatus);
-  eq(0,NetworkStuff.authentications);
-  // A valid result recovers to the newest hostname and clears pending requests.
-  NetworkStuff.API_REQUESTS.add("pending-upload");
-  NetworkStuff.WS_REQUESTS.add("pending-ping");
-  UUID local=new UUID(0,1),remote=new UUID(0,2);
-  org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.put(local,new Object());
-  org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.put(remote,new Object());
-  result(selection.revision(),"latest.trycloudflare.com");Bridge.tick();
-  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);
-  eq(1,NetworkStuff.disconnects);eq(1,NetworkStuff.authentications);eq(1,ConfigManager.saves);
-  eq(0,NetworkStuff.API_REQUESTS.size());eq(0,NetworkStuff.WS_REQUESTS.size());
-  eq(true,org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.containsKey(local));
-  eq(false,org.figuramc.figura.avatar.AvatarManager.LOADED_USERS.containsKey(remote));
-  // An arbitrarily long outage never switches to the official cloud.
-  for(int i=0;i<100;i++) { result(selection.revision(),null);Bridge.tick(); }
-  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);
-  eq(1,NetworkStuff.disconnects);eq(1,NetworkStuff.authentications);
-  // Even a Settings reset is restored to our private cloud on the next tick.
-  Configs.SERVER_IP.value="figura.moonlight-devs.org";
-  Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
-  Bridge.tick();
-  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);
-  eq(2,NetworkStuff.disconnects);eq(2,NetworkStuff.authentications);
-  System.out.println("Bridge private-only regressions passed: forced IP before first tick, private auth header, manual edit, stale results, loading preservation, recovery, queue isolation, local preview, outages and Settings reset");
+  result(selection.revision(),new Directory.Result(null,Directory.State.UNKNOWN,"GitHub timeout"));Bridge.tick();
+  eq(true,Bridge.deferAuthentication());eq(0,NetworkStuff.authentications);
+  // Advance policy to its deadline without sleeping or blocking the client.
+  Field started=Selection.class.getDeclaredField("started");started.setAccessible(true);
+  started.setLong(selection,java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime())-15001);
+  Bridge.tick();eq(false,Bridge.deferAuthentication());eq(Selection.OFFICIAL,Configs.SERVER_IP.value);eq(1,NetworkStuff.authentications);
+  result(selection.revision(),new Directory.Result("latest.trycloudflare.com",Directory.State.READY,"ready"));Bridge.tick();
+  eq("latest.trycloudflare.com",Configs.SERVER_IP.value);eq(2,NetworkStuff.authentications);
+  Configs.SERVER_IP.value="manual.trycloudflare.com";Configs.SERVER_IP.tempValue=Configs.SERVER_IP.value;
+  long old=selection.revision();result(old,new Directory.Result("stale.trycloudflare.com",Directory.State.READY,"stale"));Bridge.tick();
+  eq("manual.trycloudflare.com",Configs.SERVER_IP.value);eq(2,NetworkStuff.authentications);
+  System.out.println("Bridge passed: startup auth gate, unknown check retention, deadline fallback authentication, late recovery and stale manual-edit result rejection");
  }
 }
