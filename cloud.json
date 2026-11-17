@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "cloudId": "t0ch1na",
-  "online": true,
-  "hostname": "golden-organize-mpegs-wheel.trycloudflare.com",
-  "updatedAt": "2026-11-16T19:23:20.933875Z",
-  "expiresAt": "2026-11-16T19:43:20.933875Z"
+  "online": false,
+  "hostname": "",
+  "updatedAt": "2026-11-17T10:20:24.154233Z",
+  "expiresAt": "2026-11-17T10:40:24.154233Z"
 }
