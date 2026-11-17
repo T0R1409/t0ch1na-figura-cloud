@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "cloudId": "t0ch1na",
-  "online": true,
-  "hostname": "remembered-qui-sheffield-efforts.trycloudflare.com",
-  "updatedAt": "2026-11-17T11:51:02.747519Z",
-  "expiresAt": "2026-11-17T12:11:02.747519Z"
+  "online": false,
+  "hostname": "",
+  "updatedAt": "2026-11-17T18:37:46.552927Z",
+  "expiresAt": "2026-11-17T18:57:46.552927Z"
 }
