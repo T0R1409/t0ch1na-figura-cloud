@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "cloudId": "t0ch1na",
-  "online": false,
-  "hostname": "",
-  "updatedAt": "2026-11-19T19:03:12.328708Z",
-  "expiresAt": "2026-11-19T19:23:12.328708Z"
+  "online": true,
+  "hostname": "eval-chicken-base-levels.trycloudflare.com",
+  "updatedAt": "2026-11-19T19:03:29.531595Z",
+  "expiresAt": "2026-11-19T19:23:29.531595Z"
 }
