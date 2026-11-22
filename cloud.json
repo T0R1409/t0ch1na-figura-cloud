@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "cloudId": "t0ch1na",
-  "online": true,
-  "hostname": "loads-enhance-rating-host.trycloudflare.com",
-  "updatedAt": "2026-11-20T15:10:03.380745Z",
-  "expiresAt": "2026-11-20T15:30:03.380745Z"
+  "online": false,
+  "hostname": "",
+  "updatedAt": "2026-11-22T12:31:36.056402Z",
+  "expiresAt": "2026-11-22T12:51:36.056402Z"
 }
